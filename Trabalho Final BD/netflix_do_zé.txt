@@ -1,0 +1,335 @@
+/* netflix_do_ze: */
+
+/* Este script possui:
+   - Criação da Base
+   - Criação das Tabelas
+   - Criação das Constraints
+   - Inserção dos dados em algumas tabelas
+
+Falta fazer:
+   - Tabela para controlar o histórico de visualizações
+   - Tabela para controlar as avaliações
+   - Tabela para controle de favoritos
+   - Inserção de mais dados nas tabelas atuais
+   - Inserção de dados nas tabelas novas que vocês criarem
+*/
+
+#===============================
+# Criação da base e das tabelas
+#===============================
+
+CREATE DATABASE netflix_do_ze;
+
+USE netflix_do_ze;
+
+CREATE TABLE tb_planos (
+    id_plano int PRIMARY KEY AUTO_INCREMENT,
+    descricao_plano varchar(30),
+    valor decimal(11,2)
+);
+
+CREATE TABLE tb_generos (
+    id_genero int PRIMARY KEY AUTO_INCREMENT,
+    descricao_genero varchar(20)
+);
+
+CREATE TABLE tb_usuarios (
+    id_usuario int PRIMARY KEY AUTO_INCREMENT,
+    nome varchar(50),
+    login varchar(30),
+    email varchar(50),
+    data_nascimento date,
+    plano_id int,
+    genero_id int,
+    UNIQUE (login, email)
+);
+
+CREATE TABLE tb_midias (
+    id_midia int PRIMARY KEY AUTO_INCREMENT,
+    titulo_midia varchar(30),
+    descricao_midia varchar(200),
+    tipo varchar(20) CHECK (tipo IN ('Filme', 'Serie', 'Documentario', 'Desenho')),
+    valor decimal(11,2),
+    nota float,
+    duracao int,
+    faixa_etaria int,
+    numero_temporadas int
+);
+
+CREATE TABLE tb_temporadas (
+    id_temporada int PRIMARY KEY AUTO_INCREMENT,
+    midia_id int,
+    descricao_temporada varchar(200),
+    numero_temporada int
+);
+
+CREATE TABLE tb_episodios (
+    id_episodio int PRIMARY KEY AUTO_INCREMENT,
+    temporada_id int,
+    titulo_episodio varchar(30),
+    descricao_episodio varchar(50),
+    numero_episodio int,
+    duracao int
+);
+
+CREATE TABLE tb_caracteristicas (
+    id_caracteristica int PRIMARY KEY AUTO_INCREMENT,
+    descricao varchar(30)
+);
+
+CREATE TABLE tb_midia_caract (
+    id_midia_caract int PRIMARY KEY AUTO_INCREMENT,
+    midia_id int,
+    caracteristica_id int
+);
+
+
+#===============================================
+# Criação das constraints (chaves estrangeiras)
+#===============================================
+
+ALTER TABLE tb_usuarios ADD CONSTRAINT FK_usuario_plano
+    FOREIGN KEY (plano_id)
+    REFERENCES tb_planos (id_plano);
+ 
+ALTER TABLE tb_usuarios ADD CONSTRAINT FK_usuario_genero
+    FOREIGN KEY (genero_id)
+    REFERENCES tb_generos (id_genero);
+ 
+ALTER TABLE tb_episodios ADD CONSTRAINT FK_epeisodio_temporada
+    FOREIGN KEY (temporada_id)
+    REFERENCES tb_temporadas (id_temporada);
+ 
+ALTER TABLE tb_midia_caract ADD CONSTRAINT FK_midia_caract
+    FOREIGN KEY (midia_id)
+    REFERENCES tb_midias (id_midia);
+ 
+ALTER TABLE tb_midia_caract ADD CONSTRAINT FK_caract_midia
+    FOREIGN KEY (caracteristica_id)
+    REFERENCES tb_caracteristicas (id_caracteristica);
+ 
+ALTER TABLE tb_temporadas ADD CONSTRAINT FK_temporada_midia
+    FOREIGN KEY (midia_id)
+    REFERENCES tb_midias (id_midia);
+
+#===============================
+# Alguns inserts
+#===============================
+
+INSERT INTO tb_planos (descricao_plano, valor)
+VALUES ('Gratuito', 0), ('Básico', 19.90), ('Padrão', 27.90), ('Premium', 37.90), ('Ultra', 45.90);
+
+INSERT INTO tb_generos (descricao_genero)
+VALUES ('Feminino'), ('Masculino'), ('Outro'), ('Prefiro não opinar');
+
+INSERT INTO tb_usuarios (nome, login, email, data_nascimento, plano_id, genero_id) VALUES
+('João Silva', 'joaosilva', 'joao.silva@email.com', '1990-01-15', 1, 2),
+('Maria Souza', 'mariasouza', 'maria.souza@email.com', '1985-07-22', 2, 1),
+('Carlos Oliveira', 'carlosoliveira', 'carlos.oliveira@email.com', '1992-03-11', 1, 2),
+('Ana Pereira', 'anapereira', 'ana.pereira@email.com', '1988-09-30', 3, 1),
+('Paulo Santos', 'paulosantos', 'paulo.santos@email.com', '1978-05-05', 1, 2),
+('Fernanda Lima', 'fernandalima', 'fernanda.lima@email.com', '1995-12-17', 2, 1),
+('Ricardo Mota', 'ricardomota', 'ricardo.mota@email.com', '1983-11-25', 3, 3),
+('Beatriz Almeida', 'beatrizalmeida', 'beatriz.almeida@email.com', '1990-08-08', 1, 4),
+('Darci Silva', 'darcisilva', 'darci.silva@gmail.com', '2000-07-22', 5, 3);
+
+INSERT INTO tb_midias (titulo_midia, descricao_midia, tipo, valor, nota, duracao, faixa_etaria, numero_temporadas) VALUES
+('Guerra Espacial', 'Uma série sobre viagens pelo universo.', 'Serie', 0, 8.5, 120, 12, 3),
+('Mistério na Floresta', 'Documentário sobre a biodiversidade das florestas.', 'Documentario', 15.50, 7.8, 90, 10, 0),
+('Heróis da Galáxia', 'Um grupo de heróis enfrenta desafios intergalácticos.', 'Filme', 0, 9.0, 180, 14, 0),
+('Culinária para Todos', 'Programa de culinária para iniciantes e profissionais.', 'Serie', 0, 8.2, 45, 0, 4),
+('Aventuras no Deserto', 'Filme sobre exploradores enfrentando desafios no deserto.', 'Filme', 0, 7.5, 130, 12, 0),
+('Caminho para a Vitória', 'Drama sobre a jornada de um atleta olímpico.', 'Filme', 0, 8.2, 115, 10, 0),
+('Noite de Terror', 'Filme de terror em uma casa assombrada.', 'Filme', 10.00, 6.9, 100, 16, 0),
+('Segredos do Oceano', 'Documentário sobre os mistérios dos oceanos.', 'Documentario', 0, 8.0, 50, 10, 0),
+('Cidade das Sombras', 'Série sobre detetives investigando crimes em uma cidade misteriosa.', 'Serie', 0, 9.1, 45, 16, 2),
+('Detetives Urbanos', 'Filme policial que acompanha detetives resolvendo crimes na cidade.', 'Filme', 0, 8.0, 45, 14, 0),
+('Vida Selvagem', 'Documentário sobre a fauna e flora de diferentes regiões do mundo.', 'Documentario', 0, 7.9, 50, 0, 0),
+('Saga dos Reinos', 'Série épica sobre a luta de reinos rivais por poder.', 'Serie', 0, 9.3, 50, 14, 3);
+
+INSERT INTO tb_temporadas (midia_id, descricao_temporada, numero_temporada) VALUES
+(1, 'Primeira temporada da série Guerra Espacial', 1),
+(1, 'Segunda temporada da série Guerra Espacial', 2),
+(1, 'Terceira temporada da série Guerra Espacial', 3),
+(4, 'Primeira temporada de Culinária para Todos', 1),
+(4, 'Segunda temporada de Culinária para Todos', 2),
+(4, 'Terceira temporada de Culinária para Todos', 3),
+(4, 'Quarta temporada de Culinária para Todos', 4),
+(9, 'Primeira temporada da série Cidade das Sombras', 1),
+(9, 'Segunda temporada da série Cidade das Sombras', 2),
+(12, 'Primeira temporada da série Saga dos Reinos', 1),
+(12, 'Segunda temporada da série Saga dos Reinos', 2),
+(12, 'Terceira temporada da série Saga dos Reinos', 3);
+
+
+INSERT INTO tb_episodios (temporada_id, titulo_episodio, descricao_episodio, numero_episodio, duracao) VALUES
+(1, 'O Início da Jornada', 'Primeiro episódio da série', 1, 60),
+(1, 'Descobertas Intergalácticas', 'A equipe encontra uma nova galáxia', 2, 55),
+(2, 'Novos planetas', 'Episódio inicial da segunda temporada', 1, 50),
+(2, 'A Volta para Casa', 'Episódio final da segunda temporada', 2, 50),
+(3, 'Explorando o Desconhecido', 'Primeiro episódio da terceira temporada', 1, 65),
+(3, 'O fim dos tempos', 'Último episódio da terceira temporada', 2, 65),
+(4, 'Preparando uma Receita Básica', 'Introdução à culinária', 1, 30),
+(4, 'Receitas Intermediárias', 'Aprimorando técnicas', 2, 35),
+(4, 'Receitas Avançadas', 'Seja um chef', 3, 35),
+(5, 'Receitas Doces 1', 'Aprendendo sobremesas', 1, 30),
+(5, 'Receitas Doces 2', 'Aprendendo sobremesas', 2, 30),
+(5, 'Receitas Doces 3', 'Aprendendo sobremesas', 3, 30),
+(6, 'Receitas Salgadas 1', 'Aprendendo pratos avançados', 1, 30),
+(6, 'Receitas Salgadas 2', 'Aprendendo pratos avançados', 2, 30),
+(6, 'Receitas Salgadas 3', 'Aprendendo pratos avançados', 3, 30),
+(7, 'Master Chef 1', 'Desafio das receitas', 1, 30),
+(7, 'Master Chef 2', 'Desafio das receitas', 2, 30),
+(7, 'Master Chef 3', 'Desafio das receitas', 3, 30),
+(8, 'Cidade das Sombras 1', 'Primeiro episódio da temporada', 1, 30),
+(8, 'Cidade das Sombras 1', 'Segundo episódio da temporada', 2, 30),
+(8, 'Cidade das Sombras 1', 'Terceiro episódio da temporada', 3, 30),
+(9, 'Cidade das Sombras 2', 'Primeiro episódio da temporada', 1, 30),
+(9, 'Cidade das Sombras 2', 'Segundo episódio da temporada', 2, 30),
+(9, 'Cidade das Sombras 2', 'Terceiro episódio da temporada', 3, 30),
+(10, 'O Começo do Conflito', 'Primeiro episódio da temporada', 1, 50),
+(10, 'A Ascensão do Herói', 'Personagem principal começa a se destacar', 2, 48),
+(10, 'Inimigos em Ascensão', 'Os reinos se preparam para a guerra', 3, 52),
+(10, 'A Primeira Batalha', 'Primeiro confronto entre os reinos', 4, 55),
+(11, 'Retorno dos Guerreiros', 'Os guerreiros se preparam para novos desafios', 1, 50),
+(11, 'Segredos Revelados', 'Mistérios são descobertos', 2, 49),
+(11, 'Batalha pelo Trono', 'Os reinos enfrentam uma luta intensa', 3, 53),
+(11, 'A Conquista Final', 'A batalha épica entre os reinos', 4, 54),
+(12, 'Nova Ordem', 'Um novo líder emerge', 1, 51),
+(12, 'Antigas Alianças', 'Os reinos revisitam suas alianças', 2, 49),
+(12, 'O Último Confronto', 'Os reinos entram em confronto novamente', 3, 52),
+(12, 'A Paz Final', 'Conclusão da saga e busca pela paz', 4, 57);
+
+INSERT INTO tb_caracteristicas (descricao) VALUES
+('Ação'), ('Aventura'), ('Drama'), ('Comédia'), ('Terror'), ('Suspense'), ('Romance'), ('Ficção Científica'), ('Fantasia'), ('Documentário'), ('Mistério'), ('Histórico'), ('Musical'), ('Guerra'), ('Animação'), ('Biografia'), ('Esporte'), ('Família'), ('Policial'), ('Western'), ('Crime'), ('Thriller Psicológico'), ('Realidade Virtual'), ('Distopia'), ('Super-heróis'), ('Culinária'), ('Viagem no Tempo'), ('Medieval'), ('Espionagem'), ('Apocalíptico');
+
+INSERT INTO tb_midia_caract (midia_id, caracteristica_id) VALUES
+(1, 8), (1, 14), (1, 27), 
+(2, 3), (2, 6), (2, 10), 
+(3, 1), (3, 2), (3, 8), 
+(4, 4), (4, 18), (4, 26), 
+(5, 2), (5, 11), (5, 28), 
+(6, 3), (6, 16), (6, 17), 
+(7, 5), (7, 6), (7, 11), 
+(8, 10), (8, 11), (8, 12), 
+(9, 6), (9, 19), (9, 21), 
+(10, 19), (10, 21), (10, 29), 
+(11, 10), (11, 12), (11, 20), 
+(12, 9), (12, 27), (12, 28);
+
+
+/* • Tabelas com histórico de visualizações */
+CREATE TABLE tb_historico_visualizacoes (
+    id_historico int PRIMARY KEY AUTO_INCREMENT,
+    usuario_id int,
+    midia_id int,
+    data_visualizacao datetime,
+    progresso float,
+    FOREIGN KEY (usuario_id) REFERENCES tb_usuarios(id_usuario),
+    FOREIGN KEY (midia_id) REFERENCES tb_midias(id_midia)
+);
+
+/* • Tabela de Controle de Avaliações */
+CREATE TABLE tb_avaliacoes (
+    id_avaliacao int PRIMARY KEY AUTO_INCREMENT,
+    usuario_id int,
+    midia_id int,
+    nota float CHECK (nota >= 0 AND nota <= 10),
+    data_avaliacao datetime,
+    FOREIGN KEY (usuario_id) REFERENCES tb_usuarios(id_usuario),
+    FOREIGN KEY (midia_id) REFERENCES tb_midias(id_midia)
+);
+
+/* • Tabela de Controle de Favoritos */
+CREATE TABLE tb_favoritos (
+    id_favorito int PRIMARY KEY AUTO_INCREMENT,
+    usuario_id int,
+    midia_id int,
+    FOREIGN KEY (usuario_id) REFERENCES tb_usuarios(id_usuario),
+    FOREIGN KEY (midia_id) REFERENCES tb_midias(id_midia)
+);
+
+INSERT INTO tb_historico_visualizacoes (usuario_id, midia_id, data_visualizacao, progresso) VALUES
+(1, 1, '2024-11-01 14:00:00', 80),
+(2, 3, '2024-11-02 18:30:00', 100),
+(3, 5, '2024-11-03 10:15:00', 50),
+(4, 7, '2024-11-04 22:00:00', 100);
+
+INSERT INTO tb_avaliacoes (usuario_id, midia_id, nota, data_avaliacao) VALUES
+(1, 1, 9.0, '2024-11-02 09:00:00'),
+(2, 3, 8.5, '2024-11-02 20:00:00'),
+(3, 4, 7.0, '2024-11-03 12:00:00'),
+(4, 7, 6.5, '2024-11-04 23:00:00');
+
+INSERT INTO tb_favoritos (usuario_id, midia_id) VALUES
+(1, 1),
+(2, 3),
+(3, 4),
+(4, 7);
+
+/* a. Listagem das 5 mídias mais bem avaliadas */
+SELECT m.titulo_midia, AVG(a.nota) AS media_avaliacao
+FROM tb_avaliacoes a
+JOIN tb_midias m ON a.midia_id = m.id_midia
+GROUP BY m.id_midia
+ORDER BY media_avaliacao DESC
+LIMIT 5;
+
+/* b. Quais as 5 (cinco) características que mais aparecem nas mídias */
+SELECT c.descricao, COUNT(mc.midia_id) AS quantidade
+FROM tb_midia_caract mc
+JOIN tb_caracteristicas c ON mc.caracteristica_id = c.id_caracteristica
+GROUP BY c.id_caracteristica
+ORDER BY quantidade DESC
+LIMIT 5;
+
+/* c. Quais os 3 (três) filmes mais visualizados */
+SELECT m.titulo_midia, COUNT(h.id_historico) AS visualizacoes
+FROM tb_historico_visualizacoes h
+JOIN tb_midias m ON h.midia_id = m.id_midia
+WHERE m.tipo = 'Filme'
+GROUP BY m.id_midia
+ORDER BY visualizacoes DESC
+LIMIT 3;
+
+/* d. Quais o cliente que mais assistiu mídias */
+SELECT u.nome, COUNT(h.id_historico) AS total_visualizacoes
+FROM tb_historico_visualizacoes h
+JOIN tb_usuarios u ON h.usuario_id = u.id_usuario
+GROUP BY u.id_usuario
+ORDER BY total_visualizacoes DESC
+LIMIT 1;
+
+/* e. Qual gênero mais assiste? */
+SELECT g.descricao_genero, COUNT(h.id_historico) AS total_visualizacoes
+FROM tb_historico_visualizacoes h
+JOIN tb_usuarios u ON h.usuario_id = u.id_usuario
+JOIN tb_generos g ON u.genero_id = g.id_genero
+GROUP BY g.id_genero
+ORDER BY total_visualizacoes DESC
+LIMIT 1;
+
+/* f. Quais características que ainda não aparecem nas mídias? */
+SELECT c.descricao
+FROM tb_caracteristicas c
+LEFT JOIN tb_midia_caract mc ON c.id_caracteristica = mc.caracteristica_id
+WHERE mc.midia_id IS NULL;
+
+/* g. Qual a característica mais bem avaliada por cada gênero? */
+SELECT g.descricao_genero, c.descricao, AVG(a.nota) AS media_avaliacao
+FROM tb_avaliacoes a
+JOIN tb_midias m ON a.midia_id = m.id_midia
+JOIN tb_midia_caract mc ON m.id_midia = mc.midia_id
+JOIN tb_caracteristicas c ON mc.caracteristica_id = c.id_caracteristica
+JOIN tb_usuarios u ON a.usuario_id = u.id_usuario
+JOIN tb_generos g ON u.genero_id = g.id_genero
+GROUP BY g.id_genero, c.id_caracteristica
+ORDER BY g.id_genero, media_avaliacao DESC;
+
+/* h. Qual ou quais mídias recomendar para cada usuário? */
+SELECT u.nome, m.titulo_midia
+FROM tb_usuarios u
+JOIN tb_favoritos f ON u.id_usuario = f.usuario_id
+JOIN tb_midias m ON f.midia_id = m.id_midia
+WHERE u.id_usuario IN (SELECT usuario_id FROM tb_historico_visualizacoes)
+ORDER BY u.nome;
